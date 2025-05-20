@@ -19,15 +19,18 @@ export default function Home() {
         const renderer = new THREE.WebGLRenderer({
             canvas: canvasRef.current,
             antialias: true,
-            // alpha: true, // transparent background
+            alpha: true, // uncomment if you want transparent BG
         });
         renderer.setSize(sizes.width, sizes.height);
         renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        renderer.setClearColor(0x000000, 0)
 
         const controls = new OrbitControls(camera, renderer.domElement);
         controls.enableDamping = true;
         controls.autoRotate = true;
         controls.autoRotateSpeed = 5;
+        controls.enablePan = false;
+        controls.enableZoom = false;
 
         scene.add(new THREE.HemisphereLight(0xffffff, 0xaaaaaa, 0.5));
         const light = new THREE.PointLight(0xffffff, 100, 300);
@@ -36,7 +39,7 @@ export default function Home() {
 
         // ——— load your Earth model ———
         const loader = new GLTFLoader();
-        let modelRoot = new THREE.Group(); // placeholder pivot
+        const modelRoot = new THREE.Group(); // placeholder pivot
         scene.add(modelRoot);
 
         loader.load(
@@ -45,28 +48,80 @@ export default function Home() {
                 // pull out the loaded scene
                 const earth = gltf.scene;
 
-                // Center pivot: compute bounding box center and recast earth's position
+                earth.traverse((obj) => {
+                    if (obj.isMesh && obj.material) {
+                        // if there's an array of materials:
+                        if (Array.isArray(obj.material)) {
+                            obj.material.forEach((mat) => {
+                                mat.transparent = false;
+                                mat.opacity = 1;
+                                // if the model uses alphaTest, you can disable it:
+                                mat.alphaTest = 0;
+                            });
+                        } else {
+                            obj.material.transparent = false;
+                            obj.material.opacity = 1;
+                            obj.material.alphaTest = 0;
+                        }
+                    }
+                });
+
+                // Center pivot
                 const box = new THREE.Box3().setFromObject(earth);
                 const center = box.getCenter(new THREE.Vector3());
-                earth.position.sub(center); // move geometry so its center is at 0,0,0
+                earth.position.sub(center);
 
-                // add earth into our pivot-group
                 modelRoot.add(earth);
-
-                // scale & reposition the pivot-group if desired
                 modelRoot.scale.set(5, 5, 5);
                 modelRoot.position.set(0, -0.5, 0);
-
-                // make controls rotate around the pivot
                 controls.target.copy(modelRoot.position);
                 controls.update();
 
-                // optional: intro tween on the earth itself
+                // intro tween
                 gsap.fromTo(
                     modelRoot.scale,
                     { x: 0, y: 0, z: 0 },
                     { x: 5, y: 5, z: 5, duration: 1, ease: "power2.out" }
                 );
+
+                // ——— radial‑gradient circle as a Sprite ———
+                // create a canvas and draw white→transparent radial gradient
+                const size = 512;
+                const gradCanvas = document.createElement("canvas");
+                gradCanvas.width = gradCanvas.height = size;
+                const ctx = gradCanvas.getContext("2d");
+                const grad = ctx.createRadialGradient(
+                    size / 2,
+                    size / 2,
+                    0,
+                    size / 2,
+                    size / 2,
+                    size / 2
+                );
+                grad.addColorStop(0, "rgba(255,255,255,1)");
+                grad.addColorStop(1, "rgba(255,255,255,0)");
+                ctx.fillStyle = grad;
+                ctx.fillRect(0, 0, size, size);
+
+                // make a texture from it
+                const gradientTex = new THREE.CanvasTexture(gradCanvas);
+
+                // SpriteMaterial with additive blending
+                const spriteMat = new THREE.SpriteMaterial({
+                    map: gradientTex,
+                    transparent: true,
+                    blending: THREE.AdditiveBlending,
+                    depthWrite: false,
+                    opacity: 0.25, // adjust as needed
+                });
+
+                // Sprite that always faces camera
+                const sprite = new THREE.Sprite(spriteMat);
+                // scale it so it surrounds your earth (5 units → 10 world units)
+                const worldSize = 8;
+                sprite.scale.set(worldSize, worldSize, 1);
+                sprite.position.copy(modelRoot.position);
+                scene.add(sprite);
             },
             undefined,
             (err) => console.error("GLTF load error:", err)
@@ -98,13 +153,10 @@ export default function Home() {
             controls.dispose();
             renderer.dispose();
             scene.traverse((obj) => {
-                if (obj.isMesh) {
-                    obj.geometry.dispose();
-                    if (Array.isArray(obj.material)) {
-                        obj.material.forEach((m) => m.dispose());
-                    } else {
-                        obj.material.dispose();
-                    }
+                if (obj.isMesh || obj.isSprite) {
+                    if (obj.geometry) obj.geometry.dispose();
+                    if (Array.isArray(obj.material)) obj.material.forEach((m) => m.dispose());
+                    else if (obj.material) obj.material.dispose();
                 }
             });
         };
