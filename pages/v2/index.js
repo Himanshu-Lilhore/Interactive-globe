@@ -4,61 +4,6 @@ import { useEffect, useRef } from "react";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import gsap from "gsap";
 
-function createArcTube({
-    fromLat,
-    fromLng,
-    toLat,
-    toLng,
-    radius = 1,
-    altitude = 0.2,
-    segments = 100,
-    tubeRadius = 0.005,
-    tubeRadialSegments = 8,
-    opacity = 0.8,
-} = {}) {
-    // 1. Lat/Lng → Vector3
-    const φ1 = THREE.MathUtils.degToRad(fromLat);
-    const θ1 = THREE.MathUtils.degToRad(fromLng - 180);
-    const from = new THREE.Vector3(
-        -radius * Math.cos(φ1) * Math.cos(θ1),
-        radius * Math.sin(φ1),
-        radius * Math.cos(φ1) * Math.sin(θ1)
-    );
-
-    const φ2 = THREE.MathUtils.degToRad(toLat);
-    const θ2 = THREE.MathUtils.degToRad(toLng - 180);
-    const to = new THREE.Vector3(
-        -radius * Math.cos(φ2) * Math.cos(θ2),
-        radius * Math.sin(φ2),
-        radius * Math.cos(φ2) * Math.sin(θ2)
-    );
-
-    // 2. Make control points and lift them
-    const mid1 = from
-        .clone()
-        .lerp(to, 0.25)
-        .multiplyScalar(1 + altitude);
-    const mid2 = from
-        .clone()
-        .lerp(to, 0.75)
-        .multiplyScalar(1 + altitude);
-
-    // 3. Build Bézier curve & tube geometry
-    const curve = new THREE.CubicBezierCurve3(from, mid1, mid2, to);
-    const tubeGeo = new THREE.TubeGeometry(curve, segments, tubeRadius, tubeRadialSegments, false);
-
-    // 4. Random color
-    const color = new THREE.Color(Math.random(), Math.random(), Math.random());
-    const tubeMat = new THREE.MeshStandardMaterial({
-        color,
-        transparent: true,
-        opacity,
-    });
-
-    // 5. Return mesh
-    return new THREE.Mesh(tubeGeo, tubeMat);
-}
-
 function createArcTubeAndCurve({
     fromLat,
     fromLng,
@@ -165,10 +110,76 @@ export default function V2() {
         const earth = new THREE.Mesh(earthGeometry, earthMaterial);
         scene.add(earth);
 
-        // ARC
+        //--------------// ARC //--------------//
+        // routes.forEach((route) => {
+        //     // Building Arc
+        //     const { mesh: arcMesh, curve } = createArcTubeAndCurve({
+        //         ...route,
+        //         radius: 1,
+        //         altitude: 0.5,
+        //         tubeRadius: 0.005,
+        //     });
+        //     scene.add(arcMesh);
 
-        routes.forEach((route) => {
-            // 1) Build tube + get its curve
+        //     // Arc Animations
+        //     const geo = arcMesh.geometry;
+        //     const total = geo.index.count;
+
+        //     const state = { head: 0, tail: 0 };
+
+        //     const tl = gsap.timeline({
+        //         repeat: -1,
+        //         defaults: {
+        //             ease: "none",
+        //             immediateRender: false, // don’t apply start values prematurely
+        //         },
+        //     });
+        //     // Phase A: draw in from 0→total
+        //     tl.fromTo(
+        //         state,
+        //         { head: 0, tail: 0 },
+        //         {
+        //             head: total,
+        //             duration: 2,
+        //             onUpdate: () => {
+        //                 geo.setDrawRange(
+        //                     Math.floor(state.tail),
+        //                     Math.floor(state.head - state.tail)
+        //                 );
+        //             },
+        //         }
+        //     );
+        //     // Phase B: wipe out from front 0→total
+        //     tl.to(state, {
+        //         tail: total,
+        //         duration: 2,
+        //         onUpdate: () => {
+        //             geo.setDrawRange(Math.floor(state.tail), Math.floor(state.head - state.tail));
+        //         },
+        //     });
+
+        //     //--------------// DOTTED //--------------//
+
+        //     // 3) Flying dot along the same curve
+        //     // const dot = new THREE.Mesh(
+        //     //   new THREE.SphereGeometry(0.01, 8, 8),
+        //     //   new THREE.MeshBasicMaterial({ color: 0xffffff })
+        //     // );
+        //     // scene.add(dot);
+
+        //     // const state = { t: 0 };
+        //     // gsap.to(state, {
+        //     //   t: 1,
+        //     //   duration: 3,
+        //     //   ease: "none",
+        //     //   repeat: -1,
+        //     //   onUpdate: () => {
+        //     //     dot.position.copy(curve.getPoint(state.t));
+        //     //   },
+        //     // });
+        // });
+
+        const anims = routes.map((route) => {
             const { mesh: arcMesh, curve } = createArcTubeAndCurve({
                 ...route,
                 radius: 1,
@@ -177,140 +188,18 @@ export default function V2() {
             });
             scene.add(arcMesh);
 
-            // // 1) Grab the index count instead of position.count
-            // const total = arcMesh.geometry.index.count;
-            // // 2) Initialize hidden
-            // arcMesh.geometry.setDrawRange(0, 0);
-            // // 3) Animate draw from 0 → total, loop, no yoyo
-            // const obj = { draw: 0 };
-            // gsap.to(obj, {
-            //     draw: total,
-            //     duration: 2,
-            //     ease: "none", // straight linear wipe
-            //     onUpdate: () => {
-            //         // setDrawRange(startIndex, count)
-            //         arcMesh.geometry.setDrawRange(0, Math.floor(obj.draw));
-            //     },
-            //     repeat: -1, // loop forever
-            //     yoyo: false, // don’t animate backwards
-            // });
+            const geo = arcMesh.geometry;
+            const total = geo.index.count;
 
+            // reset drawRange
+            geo.setDrawRange(0, 0);
 
-
-
-
-//             // 1) grab geometry and its index count
-// const geo   = arcMesh.geometry;
-// const total = geo.index.count;
-
-// // 2) initialize hidden
-// geo.setDrawRange(0, 0);
-
-// // 3) create state object
-// const state = { head: 0, tail: 0 };
-
-// // 4) build a looping timeline
-// const tl = gsap.timeline({ repeat: -1 });
-
-// // Phase A: draw from 0 → total
-// tl.to(state, {
-//   head: total,
-//   duration: 2,
-//   ease: "none",
-//   onUpdate: () => {
-//     geo.setDrawRange(
-//       Math.floor(state.tail),
-//       Math.floor(state.head - state.tail)
-//     );
-//   }
-// });
-
-// // Phase B: erase from front: tail 0 → total
-// tl.to(state, {
-//   tail: total,
-//   duration: 2,
-//   ease: "none",
-//   onUpdate: () => {
-//     geo.setDrawRange(
-//       Math.floor(state.tail),
-//       Math.floor(state.head - state.tail)
-//     );
-//   }
-// });
-
-
-
-
-const geo   = arcMesh.geometry;
-const total = geo.index.count;
-
-const state = { head: 0, tail: 0 };
-
-const tl = gsap.timeline({
-  repeat: -1,
-  defaults: { 
-    ease: "none",
-    immediateRender: false   // don’t apply start values prematurely
-  }
-});
-
-// Phase A: draw in from 0→total
-tl.fromTo(state,
-  { head: 0, tail: 0 },
-  {
-    head: total,
-    duration: 2,
-    onUpdate: () => {
-      geo.setDrawRange(
-        Math.floor(state.tail),
-        Math.floor(state.head - state.tail)
-      );
-    }
-  }
-);
-
-// Phase B: wipe out from front 0→total
-tl.to(state, {
-  tail: total,
-  duration: 2,
-  onUpdate: () => {
-    geo.setDrawRange(
-      Math.floor(state.tail),
-      Math.floor(state.head - state.tail)
-    );
-  }
-});
-
-
-
-
-
-
-
-
-
-
-
-            ////// DOTTED /////////////
-
-            // 3) Flying dot along the same curve
-            // const dot = new THREE.Mesh(
-            //   new THREE.SphereGeometry(0.01, 8, 8),
-            //   new THREE.MeshBasicMaterial({ color: 0xffffff })
-            // );
-            // scene.add(dot);
-
-            // const state = { t: 0 };
-            // gsap.to(state, {
-            //   t: 1,
-            //   duration: 3,
-            //   ease: "none",
-            //   repeat: -1,
-            //   onUpdate: () => {
-            //     dot.position.copy(curve.getPoint(state.t));
-            //   },
-            // });
+            return { geo, total, head: 0, tail: 0 };
         });
+
+        const cycleDuration = 2; // seconds for draw
+        const wipeDuration = 2; // seconds for erase
+        const fullCycle = cycleDuration + wipeDuration;
 
         // ——— resize handler ———
         const onResize = () => {
@@ -324,7 +213,27 @@ tl.to(state, {
 
         // ——— render loop ———
         let frameId;
+        const clock = new THREE.Clock();
         const tick = () => {
+            const elapsed = clock.getElapsedTime();
+            const t = elapsed % fullCycle;
+
+            anims.forEach((anim) => {
+                // Phase A: 0 → cycleDuration
+                if (t < cycleDuration) {
+                    anim.head = (t / cycleDuration) * anim.total;
+                    anim.tail = 0;
+                }
+                // Phase B: cycleDuration → fullCycle
+                else {
+                    const tt = (t - cycleDuration) / wipeDuration;
+                    anim.head = anim.total;
+                    anim.tail = tt * anim.total;
+                }
+
+                // apply drawRange
+                anim.geo.setDrawRange(Math.floor(anim.tail), Math.floor(anim.head - anim.tail));
+            });
             controls.update();
             renderer.render(scene, camera);
             frameId = requestAnimationFrame(tick);
