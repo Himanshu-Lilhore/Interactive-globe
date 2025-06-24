@@ -77,7 +77,7 @@ export default function V2() {
         const scene = new THREE.Scene();
         const sizes = { width: window.innerWidth, height: window.innerHeight };
         const camera = new THREE.PerspectiveCamera(45, sizes.width / sizes.height, 0.1, 100);
-        camera.position.z = 4;
+        camera.position.z = 6;
         scene.add(camera);
 
         const renderer = new THREE.WebGLRenderer({
@@ -93,29 +93,51 @@ export default function V2() {
         controls.enableDamping = true;
         // controls.autoRotate = true;
         // controls.autoRotateSpeed = 5;
-        controls.enablePan = true;
+        // controls.enablePan = true;
         controls.enableZoom = true;
 
         const pointLight = new THREE.PointLight(0xffffff, 5, 100, 1);
-        pointLight.position.set(2, 2, 2);
-        const ambientLight = new THREE.AmbientLight(0xffffff, 0.2);
+        pointLight.position.set(2, 1, 1);
+        const pointLightHelper = new THREE.PointLightHelper(pointLight, 0.2)
+        scene.add(pointLightHelper)
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.3);
         scene.add(pointLight, ambientLight);
 
         const textureLoader = new THREE.TextureLoader();
+
+        // EARTH
         const earthTexture = textureLoader.load("/textures/earthTexture.jpg");
         // const earthTexture = textureLoader.load("/textures/earthMapDark.png");
         // const earthTexture = textureLoader.load("/textures/earthMapDark.webp");
         // const earthTexture = textureLoader.load("/textures/earthGrayscaleTx.png");
         // const earthTexture = textureLoader.load("/textures/EquirectangularProjection.svg");
         // const earthTexture = textureLoader.load("/textures/earthGreenWhite.png");
+        // const earthTexture = textureLoader.load("/textures/dottedMap.jpg");
 
         const earthGeometry = new THREE.SphereGeometry(1, 32, 32);
-        const earthMaterial = new THREE.MeshBasicMaterial({
+        const earthMaterial = new THREE.MeshStandardMaterial({
             // color: 0x0000ff,
             map: earthTexture,
+            metalness: 0.6,
+            roughness: 0.6
         });
         const earth = new THREE.Mesh(earthGeometry, earthMaterial);
         scene.add(earth);
+        
+        // MOON
+        const moonTexture = textureLoader.load("/textures/moonEquirectangular.jpg")
+        const moonGeometry = new THREE.SphereGeometry(0.5, 32, 32);
+        const moonMaterial = new THREE.MeshStandardMaterial({
+            map: moonTexture,
+            metalness: 0.4,
+            roughness: 0.7
+        });
+        const moon = new THREE.Mesh(moonGeometry, moonMaterial);
+        moon.position.x = 5
+        scene.add(moon);
+
+
+
 
 
         const anims = routes.map((route) => {
@@ -194,6 +216,10 @@ export default function V2() {
 
                 anim.geo.setDrawRange(Math.floor(anim.tail), Math.floor(anim.head - anim.tail));
             });
+
+
+            moon.position.x = 6 * Math.sin(elapsed/2)
+            moon.position.z = 6 * Math.cos(elapsed/2)
             controls.update();
             renderer.render(scene, camera);
             frameId = requestAnimationFrame(tick);
