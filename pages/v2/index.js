@@ -49,7 +49,8 @@ function createArcTubeAndCurve({
     const tubeGeo = new THREE.TubeGeometry(curve, segments, tubeRadius, tubeRadialSegments, false);
 
     // — Random color material
-    const color = new THREE.Color(Math.random(), Math.random(), Math.random());
+    // const color = new THREE.Color(Math.random(), Math.random(), Math.random());
+    const color = new THREE.Color(0,0,0);
     const tubeMat = new THREE.MeshBasicMaterial({ color, transparent: true, opacity });
     const mesh = new THREE.Mesh(tubeGeo, tubeMat);
 
@@ -77,7 +78,7 @@ export default function V2() {
         const scene = new THREE.Scene();
         const sizes = { width: window.innerWidth, height: window.innerHeight };
         const camera = new THREE.PerspectiveCamera(45, sizes.width / sizes.height, 0.1, 100);
-        camera.position.z = 6;
+        camera.position.z = 4;
         scene.add(camera);
 
         const renderer = new THREE.WebGLRenderer({
@@ -87,7 +88,7 @@ export default function V2() {
         });
         renderer.setSize(sizes.width, sizes.height);
         renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-        renderer.setClearColor(0x000000, 1);
+        renderer.setClearColor(0x000000, 0);
 
         const controls = new OrbitControls(camera, renderer.domElement);
         controls.enableDamping = true;
@@ -96,26 +97,28 @@ export default function V2() {
         // controls.enablePan = true;
         controls.enableZoom = true;
 
-        const pointLight = new THREE.PointLight(0xffffff, 5, 100, 1);
+        const pointLight = new THREE.PointLight(0xffffff, 8, 100, 4);
         pointLight.position.set(2, 1, 1);
         const pointLightHelper = new THREE.PointLightHelper(pointLight, 0.2)
-        scene.add(pointLightHelper)
+        // scene.add(pointLightHelper)
         const ambientLight = new THREE.AmbientLight(0xffffff, 0.3);
-        scene.add(pointLight, ambientLight);
+        // scene.add(pointLight, ambientLight);
 
         const textureLoader = new THREE.TextureLoader();
 
         // EARTH
-        const earthTexture = textureLoader.load("/textures/earthTexture.jpg");
+        // const earthTexture = textureLoader.load("/textures/earthTexture.jpg");
         // const earthTexture = textureLoader.load("/textures/earthMapDark.png");
         // const earthTexture = textureLoader.load("/textures/earthMapDark.webp");
         // const earthTexture = textureLoader.load("/textures/earthGrayscaleTx.png");
         // const earthTexture = textureLoader.load("/textures/EquirectangularProjection.svg");
+        // const earthTexture = textureLoader.load("/textures/NewEqPro.svg");
         // const earthTexture = textureLoader.load("/textures/earthGreenWhite.png");
+        const earthTexture = textureLoader.load("/textures/Mapearth.png");
         // const earthTexture = textureLoader.load("/textures/dottedMap.jpg");
 
         const earthGeometry = new THREE.SphereGeometry(1, 32, 32);
-        const earthMaterial = new THREE.MeshStandardMaterial({
+        const earthMaterial = new THREE.MeshBasicMaterial({
             // color: 0x0000ff,
             map: earthTexture,
             metalness: 0.6,
@@ -134,7 +137,11 @@ export default function V2() {
         });
         const moon = new THREE.Mesh(moonGeometry, moonMaterial);
         moon.position.x = 5
-        scene.add(moon);
+        // scene.add(moon);
+
+        const earthGroup = new THREE.Group()
+        earthGroup.add(earth)
+        scene.add(earthGroup)
 
 
 
@@ -148,6 +155,7 @@ export default function V2() {
                 tubeRadius: 0.002,
             });
             scene.add(arcMesh);
+            earthGroup.add(arcMesh)
 
             // FROM / TO circular markers
             const markMat = new THREE.MeshBasicMaterial({ color: 0x000000 });
@@ -160,7 +168,7 @@ export default function V2() {
             toMarker.position.copy(to);
             toMarker.lookAt(to.clone().multiplyScalar(2));
             scene.add(toMarker);
-
+            earthGroup.add(fromMarker, toMarker)
 
             const geo = arcMesh.geometry;
             const total = geo.index.count;
@@ -168,10 +176,10 @@ export default function V2() {
             // reset drawRange
             geo.setDrawRange(0, 0);
 
-            const startDelay = 1+ Math.random()*3;
+            const startDelay = 1+ Math.random()*1;
             const cycleDuration = 0.9; // seconds for draw
             const wipeDuration = 0.4; // seconds for erase
-            const holdDuration = 3+ Math.random()*2;
+            const holdDuration = 1+ Math.random()*1;
 
             return { geo, total, head: 0, tail: 0, startDelay, cycleDuration, wipeDuration, holdDuration };
         });
@@ -218,6 +226,7 @@ export default function V2() {
             });
 
 
+            earthGroup.rotation.y = elapsed/2
             moon.position.x = 6 * Math.sin(elapsed/2)
             moon.position.z = 6 * Math.cos(elapsed/2)
             controls.update();
