@@ -2,7 +2,7 @@ import * as THREE from "three";
 import { useEffect, useRef } from "react";
 import { gsap } from "gsap";
 
-export default function V2() {
+export default function GlobeV3() {
     const canvasRef = useRef(null);
 
     useEffect(() => {
@@ -27,15 +27,6 @@ export default function V2() {
         const textureLoader = new THREE.TextureLoader();
 
         // EARTH
-        // const earthTexture = textureLoader.load("/textures/earthTexture.jpg");
-        // const earthTexture = textureLoader.load("/textures/earthMapDark.png");
-        // const earthTexture = textureLoader.load("/textures/earthMapDark.webp");
-        // const earthTexture = textureLoader.load("/textures/earthGrayscaleTx.png");
-        // const earthTexture = textureLoader.load("/textures/EquirectangularProjection.svg");
-        // const earthTexture = textureLoader.load("/textures/NewEqPro.svg");
-        // const earthTexture = textureLoader.load("/textures/earthGreenWhite.png");
-        // const earthTexture = textureLoader.load("/textures/Mapearth.png");
-        // const earthTexture = textureLoader.load("/textures/dottedMap.jpg");
         const earthTexture = textureLoader.load("/textures/hexPattern3.png");
 
         const earthRadius = 1.7;
@@ -69,7 +60,7 @@ export default function V2() {
         const hazeCircle = new THREE.Mesh(hazeGeometry, hazeMaterial);
 
         // ----- HALO ------
-        const haloWidth = earthRadius * 0.02,
+        const haloWidth = earthRadius * 0.01,
             haloRadius = earthRadius * 1.13;
         const haloGeometry = new THREE.RingGeometry(haloRadius, haloRadius + haloWidth, 128);
 
@@ -186,38 +177,38 @@ export default function V2() {
         };
         tick();
 
-        // ------ gsap animation -------
-        masterGroup.scale.set(0, 0, 0);
-        hazeMaterial.opacity = 0;
-        haloMaterial.opacity = 0;
-        boundaryMaterial.opacity = 0;
+        // // ------ gsap animation -------
+        // masterGroup.scale.set(0.8, 0.8, 0.8);
+        // hazeMaterial.opacity = 0;
+        // haloMaterial.opacity = 0;
+        // boundaryMaterial.opacity = 0;
 
-        const tl = gsap.timeline();
+        // const tl = gsap.timeline();
 
-        // Animate the group's scale to 1
-        tl.to(masterGroup.scale, {
-            duration: 3, // Animation duration in seconds
-            x: 1,
-            y: 1,
-            z: 1,
-            ease: "power3.out", // A nice easing function for a smooth effect
-        });
+        // // Animate the group's scale to 1
+        // tl.to(masterGroup.scale, {
+        //     duration: 3, // Animation duration in seconds
+        //     x: 1,
+        //     y: 1,
+        //     z: 1,
+        //     ease: "power3.out", // A nice easing function for a smooth effect
+        // });
 
-        tl.to(
-            [earthMaterial, haloMaterial, boundaryMaterial, hazeMaterial],
-            {
-                duration: 3,
-                opacity: (i) => {
-                    // Return the final opacity for each material in the array
-                    if (i === 0) return 1; // earthMaterial
-                    if (i === 1) return 0.8; // haloMaterial
-                    if (i === 2) return 1; // boundaryMaterial
-                    return 0.2; // hazeMaterial
-                },
-                ease: "power2.out",
-            },
-            "<"
-        );
+        // tl.to(
+        //     [earthMaterial, haloMaterial, boundaryMaterial, hazeMaterial],
+        //     {
+        //         duration: 3,
+        //         opacity: (i) => {
+        //             // Return the final opacity for each material in the array
+        //             if (i === 0) return 1; // earthMaterial
+        //             if (i === 1) return 0.8; // haloMaterial
+        //             if (i === 2) return 1; // boundaryMaterial
+        //             return 0.2; // hazeMaterial
+        //         },
+        //         ease: "power2.out",
+        //     },
+        //     "<"
+        // );
 
         // ——— cleanup ———
         return () => {
@@ -234,12 +225,5 @@ export default function V2() {
         };
     }, []);
 
-    return (
-        <div className="relative w-screen h-screen overflow-hidden ">
-            <canvas
-                ref={canvasRef}
-                className="webgl z-30 absolute h-full w-full bottom-0 left-[-25%] p-5"
-            />
-        </div>
-    );
+    return <canvas ref={canvasRef} className="webgl" />;
 }

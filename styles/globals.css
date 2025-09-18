@@ -10,3 +10,21 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+
+@keyframes fadeUp {
+  0% {
+    scale: 90%;
+    transform: translateY(6vw);
+    opacity: 0;
+  }
+  100% {
+    scale: 104%;
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.fade-up {
+  animation: fadeUp 1.5s ease-out forwards;
+}
