@@ -27,7 +27,7 @@ export default function GlobeV3() {
         const textureLoader = new THREE.TextureLoader();
 
         // EARTH
-        const earthTexture = textureLoader.load("/textures/hexPattern3.png");
+        const earthTexture = textureLoader.load("/textures/smallDotMapBlack.png");
 
         const earthRadius = 1.7;
         const earthGeometry = new THREE.SphereGeometry(earthRadius, 32, 32);
@@ -48,12 +48,12 @@ export default function GlobeV3() {
         scene.add(earth);
 
         // --- INNER HAZE CIRCLE ---
-        const hazeGeometry = new THREE.CircleGeometry(earthRadius * 1.04, 64);
+        const hazeGeometry = new THREE.CircleGeometry(earthRadius * 1.06, 64);
 
         const hazeMaterial = new THREE.MeshBasicMaterial({
-            color: 0x212121, // Black color to create a dimming effect
+            color: 0x000000, // Black color to create a dimming effect
             transparent: true,
-            opacity: 0.3, // Low opacity for a subtle haze
+            opacity: 0.15, // Low opacity for a subtle haze
             depthWrite: false, // Prevents depth conflicts with other transparent objects
         });
 
