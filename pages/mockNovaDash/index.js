@@ -21,9 +21,9 @@ const Home = () => {
                     fill
                     alt="bg-image"
                 />
-                <div className="z-20 absolute top-0 left-0 h-full w-full bg-gradient-to-tl from-[#ED9C0033] to-transparent"></div>
-                <div className="relative flex flex-col z-40 text-[#FFFFFF] w-full p-[2.78vw] gap-[0.83vw]">
-                    <div className="text-[2.2vw] font-medium">Your Success Story Starts Here</div>
+                <div className="z-20 absolute top-0 left-0 h-full w-full bg-gradient-to-tl from-[#ED9C0022] to-transparent"></div>
+                <div className="relative flex flex-col z-40 text-[#FFFFFF] w-full p-[2.78vw] gap-[0.83vw] font-host-grotesk">
+                    <div className="text-[2.2vw] font-semibold">Your Success Story Starts Here</div>
                     <div className="text-[1.11vw] font-medium">
                         Get expert guidance to achieve admits you once only dreamed of
                     </div>

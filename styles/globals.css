@@ -1,5 +1,14 @@
 @import "tailwindcss";
 
+@font-face {
+  font-family: "host-grotesk";
+  src: url("../fonts/HostGrotesk-VariableFont_wght.ttf");
+}
+
+.font-host-grotesk {
+  font-family: "host-grotesk";
+}
+
 :root {
   --background: #ececec;
   --foreground: #4d4d4d;

@@ -49,6 +49,7 @@ export default function GlobeV3() {
 
         // --- INNER HAZE CIRCLE ---
         const hazeGeometry = new THREE.CircleGeometry(earthRadius * 1.06, 64);
+        
 
         const hazeMaterial = new THREE.MeshBasicMaterial({
             color: 0x000000, // Black color to create a dimming effect
@@ -71,9 +72,9 @@ export default function GlobeV3() {
         const positions = haloGeometry.attributes.position.array;
         const colors = new Float32Array(vertexCount * 3); // RGB
 
-        const Q1_END = Math.PI / 2; // 90 degrees
-        const Q2_END = Math.PI; // 180 degrees
-        const Q3_END = (3 * Math.PI) / 2; // 270 degrees
+        const Q1_END = Math.PI / 2;
+        const Q2_END = Math.PI;
+        const Q3_END = (3 * Math.PI) / 2;
 
         for (let i = 0; i < vertexCount; i++) {
             const x = positions[i * 3];
@@ -82,7 +83,7 @@ export default function GlobeV3() {
 
             let angle = Math.atan2(y, x);
             if (angle < 0) {
-                angle += 2 * Math.PI; // Normalize angle to be from 0 to 2*PI
+                angle += 2 * Math.PI;
             }
 
             if (angle <= Q1_END) {
@@ -176,39 +177,6 @@ export default function GlobeV3() {
             frameId = requestAnimationFrame(tick);
         };
         tick();
-
-        // // ------ gsap animation -------
-        // masterGroup.scale.set(0.8, 0.8, 0.8);
-        // hazeMaterial.opacity = 0;
-        // haloMaterial.opacity = 0;
-        // boundaryMaterial.opacity = 0;
-
-        // const tl = gsap.timeline();
-
-        // // Animate the group's scale to 1
-        // tl.to(masterGroup.scale, {
-        //     duration: 3, // Animation duration in seconds
-        //     x: 1,
-        //     y: 1,
-        //     z: 1,
-        //     ease: "power3.out", // A nice easing function for a smooth effect
-        // });
-
-        // tl.to(
-        //     [earthMaterial, haloMaterial, boundaryMaterial, hazeMaterial],
-        //     {
-        //         duration: 3,
-        //         opacity: (i) => {
-        //             // Return the final opacity for each material in the array
-        //             if (i === 0) return 1; // earthMaterial
-        //             if (i === 1) return 0.8; // haloMaterial
-        //             if (i === 2) return 1; // boundaryMaterial
-        //             return 0.2; // hazeMaterial
-        //         },
-        //         ease: "power2.out",
-        //     },
-        //     "<"
-        // );
 
         // ——— cleanup ———
         return () => {
