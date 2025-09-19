@@ -61,11 +61,11 @@ export default function GlobeV3() {
         const hazeCircle = new THREE.Mesh(hazeGeometry, hazeMaterial);
 
         // ----- HALO ------
-        const haloWidth = earthRadius * 0.01,
-            haloRadius = earthRadius * 1.13;
+        const haloWidth = earthRadius * 0.005,
+            haloRadius = earthRadius * 1.115;
         const haloGeometry = new THREE.RingGeometry(haloRadius, haloRadius + haloWidth, 128);
 
-        const darkColor = new THREE.Color("#241D0F");
+        const darkColor = new THREE.Color("#212121");
         const lightColor = new THREE.Color("#FFFFFF");
 
         const vertexCount = haloGeometry.attributes.position.count;
